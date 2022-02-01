@@ -5,20 +5,23 @@ const sql = require("./dboperation.js");
 const bodyParser = require('body-parser');
 const { json } = require('body-parser');
 const jwt = require('jsonwebtoken');
+const blacklist = [];
 
 //chave secreta incorporada ao JWT
 const SECRET = 'qpwoalskfdj';
-
-
 
 app.use(bodyParser.json());
 
 // essa middle-function servira para verificar o toke JWT
 function verifyJWT(req, res, next){
     const token = req.headers['x-access-token'];
+    const index = blacklist.findIndex(item => item === token);
+
+    if(index !== -1){
+        return res.status(401).end();
+    }
     jwt.verify(token, SECRET, (err, decoded) => {
         if(err) return res.status(401).end();
-        
         req.userId = decoded.userId;
         next();
     })
@@ -41,13 +44,21 @@ app.get('/query', verifyJWT, (req, res) => {
         res.json(result[0].map(p => {
             //apos recebido os dados via corpo de requisicao na funcao, eh criado um JSON para retornar mais abaixo as informacoes no endpoint
             let jsonResult = {
-            "codigo" : p.CODIGO,
-            "status" : p.STATUS
+                "codigo" : p.CODIGO,
+                "status" : p.STATUS
             }
             //aqui eh o retorno da funcao que contem o JSON 
             return jsonResult;
         }));
     });
+})
+
+
+
+app.post('/logout', function (req, res) {
+    blacklist.push(req.headers['x-access-token']);
+    res.send("Usuário deslogado!")
+    res.end();
 })
 
 //'node index.js' para subir o servidor
