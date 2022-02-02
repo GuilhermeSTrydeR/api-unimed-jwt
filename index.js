@@ -12,11 +12,12 @@ const SECRET = 'qpwoalskfdj';
 
 app.use(bodyParser.json());
 
-// essa middle-function servira para verificar o toke JWT
+// essa middle-function servira para verificar se o token JWT eh legitimo e nao foi alterado, caso foi alterado qualquer informacao, aqui ele sera invalidado, ou tambem se tiver na blacklist.
 function verifyJWT(req, res, next){
     const token = req.headers['x-access-token'];
     const index = blacklist.findIndex(item => item === token);
 
+    //se caso o token que vai ser validado nessa funcao estiver na blacklist, eh retornado status 401, impedindo de prosseguir.
     if(index !== -1){
         return res.status(401).end();
     }
@@ -27,10 +28,12 @@ function verifyJWT(req, res, next){
     })
 }
 
+//rota para informar apenas se a API esta online
 app.get('/', (req, res) => {
     res.json({ message: "Tudo Rodando OK!"});
 })
 
+//nessa rota eh feita a geracao do token para o usuario a partir do usuario e senha que ele informou, caso o usuario ou senha seja divergente eh retornado status 401.
 app.post('/login', (req, res) => {
     if(req.body.user === 'teste' && req.body.password === '12345'){
         const token = jwt.sign({userId: 1}, SECRET, {expiresIn: 600})
@@ -39,6 +42,7 @@ app.post('/login', (req, res) => {
     res.status(401).end();
 })
 
+//nessa rota eh feita a consulta se o beneficiario esta ativo ou nao, eh necessario ser enviado no cabecalho o token gerado na rota /login, no entanto o cabecalho sera: header: 'x-access-token' value '[token gerado]' caso contrario nao sera permitida a consulta, ou se o token estiver na blacklist tbm sera negado, obs: o token entra na blacklist quando ele eh enviado por cabecalho 'x-access-token' na rota /logout.
 app.get('/query', verifyJWT, (req, res) => {
     sql.getdata_withQuery(req.body.codigo).then((result) => {
         res.json(result[0].map(p => {
@@ -54,14 +58,14 @@ app.get('/query', verifyJWT, (req, res) => {
 })
 
 
-
+//rota simples para deslogar um usuario do sistema, porem deve ser enviado por cabecalho 'x-access-token' o token para ser deslogado e com isso esse token entrara na blacklist nao podendo ser reutilizado, obs: a blacklist eh dinamica, ou seja nao eh armazenada em nenhum lugar apenas uma variavel, ao reiniciar o servidor essa blacklist eh apagada.
 app.post('/logout', function (req, res) {
     blacklist.push(req.headers['x-access-token']);
     res.send("Usuário deslogado!")
     res.end();
 })
 
-//'node index.js' para subir o servidor
+//abaixo esta definida a porta que o servidor vai subir, obs: 'node index.js' para subir o servidor
 app.listen(port, () => {
     console.log(`Aplicativo rodando na porta: ${port}`);
 })
