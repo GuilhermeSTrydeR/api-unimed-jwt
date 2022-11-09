@@ -9,6 +9,9 @@ async function getdata() {
 console.log(" mathus-error :" + error);
   }
 }
+
+
+
  
 async function getdata_withQuery(codigo) {
     try {
@@ -16,10 +19,10 @@ async function getdata_withQuery(codigo) {
 
       let codigoBeneficiario = codigo;
 
-      let res = await pool.request().query(`DECLARE @codigo AS VARCHAR (17) = ${codigoBeneficiario}
+      let res = await pool.request().query(`DECLARE @codigo AS VARCHAR(100) = ${codigoBeneficiario}
 
-      SELECT @codigo AS DIGITADO --CODIGO DIGITADO
-         , REPLACE(LTRIM(REPLACE(@codigo, '0', ' ')),' ', '0') AS CODIGO --REMOVENDO ZEROS A ESQUERDA
+      SELECT --@codigo AS DIGITADO --CODIGO DIGITADO
+          REPLACE(LTRIM(REPLACE(@codigo, '0', ' ')),' ', '0') AS CODIGO --REMOVENDO ZEROS A ESQUERDA
          , (CASE WHEN  B.codigo =@Codigo THEN 'ATIVO' --CONVERTE RESULTADO EM STATUS
           END) AS 'STATUS'
       FROM CONTRATO C WITH (NOLOCK)
@@ -44,6 +47,7 @@ async function getdata_withQuery(codigo) {
   }
   
 module.exports = {
+
   getdata: getdata,
   getdata_withQuery:getdata_withQuery
 };

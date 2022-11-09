@@ -1,4 +1,4 @@
-para gerar um token que possa ser validade nessa API, utilizar a rota /login com usuario e senha, sera retornado um token e essa token devera ser incluido no cabecalho da rota /query, utilizando 'x-access-token'
+para gerar um token que possa ser validado nessa API, utilizar a rota /login com usuario e senha, sera retornado um token e essa token devera ser incluido no cabecalho da rota /query, utilizando 'x-access-token'
 
 o arquivo 'dbconfig.js' caso nao exista, abaixo segue modelo, arquivo responsavel pela conexao com o banco 
 const config = {
